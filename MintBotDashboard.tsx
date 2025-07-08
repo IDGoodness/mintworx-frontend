@@ -21,8 +21,6 @@ const MintBotDashboard: React.FC = () => {
     name: '',
     symbol: '',
     startTime: '',
-    floorPrice: '',
-    totalSupply: '',
     contractAddress: '',
   });
 
@@ -42,8 +40,6 @@ const MintBotDashboard: React.FC = () => {
         name: result.name,
         symbol: result.symbol,
         startTime: result.startTime,
-        floorPrice: result.floorPrice,
-        totalSupply: result.totalSupply,
         contractAddress: address,
       });
     } else {
@@ -117,7 +113,7 @@ const MintBotDashboard: React.FC = () => {
           setShowSuccess(false);
           setContractAddress('');
           setContractVerified(false);
-          setNftDetails({ name: '', symbol: '', startTime: '', floorPrice: '', totalSupply: '', contractAddress: '' });
+          setNftDetails({ name: '', symbol: '', startTime: '', contractAddress: '' });
           setPrivateKey('');
           setSpeedValue(0);
         }, 3000);
@@ -210,11 +206,11 @@ const MintBotDashboard: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-white/10 p-3 rounded text-center">
                     <p className="text-sm text-white/60">Floor Price</p>
-                    <p className="font-semibold">{nftDetails.floorPrice}</p>
+                    <p className="font-semibold"></p>
                   </div>
                   <div className="bg-white/10 p-3 rounded text-center">
                     <p className="text-sm text-white/60">Total Supply</p>
-                    <p className="font-semibold">{nftDetails.totalSupply}</p>
+                    <p className="font-semibold"></p>
                   </div>
                 </div>
 
