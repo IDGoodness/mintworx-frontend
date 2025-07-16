@@ -7,6 +7,12 @@ const RPC_URLS: Record<number, string> = {
   42161: 'https://arb1.arbitrum.io/rpc',
   8453: 'https://mainnet.base.org',
   43114: 'https://api.avax.network/ext/bc/C/rpc',
+  2020: 'https://ronin.drpc.org',
+  33139: 'https://apechain.drpc.org',
+  2741: 'https://abstract.drpc.org/',
+  1868: 'https://soneium.drpc.org/',
+  80094: 'https://berachain.drpc.org/',
+
 };
 
 const COINGECKO_IDS: Record<number, string> = {
