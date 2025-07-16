@@ -37,23 +37,18 @@ async function stub(box: Cargo): Promise<Receipt> {
       }),
     });
 
-    if (!res.ok) {
-      return {
-        success: false,
-        error: `Server responded with status ${res.status}`,
-      };
-    }
 
     const data = await res.json();
 
-    if (!data?.success || !data.txHash) {
-      return {
+    if (data?.success && data.txHash && data?.txHash) {
+        return { success: true, txHash: data.txHash };
+     
+    }
+     return {
         success: false,
         error: data?.error || 'Mint failed with no transaction hash',
       };
-    }
 
-    return { success: true, txHash: data.txHash };
   } catch (err) {
     return {
       success: false,

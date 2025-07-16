@@ -5,6 +5,9 @@ import { useChainId } from 'wagmi';
 import { checkPrivateKeyBalance } from './lib/checkBal';
 import { fetchDrop } from "./lib/fetchDrop";
 import Layout from './src/Components/Layout'; // Imported Layout
+import EnhancedNFTCard from './src/Components/EnhancedNFTCard';
+
+
 
 const MintBotDashboard: React.FC = () => {
   const [speedValue, setSpeedValue] = useState(0);
@@ -17,12 +20,15 @@ const MintBotDashboard: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [isSniping, setIsSniping] = useState(false);
   const [txHash, setTxHash] = useState('');
-  const [nftDetails, setNftDetails] = useState({
-    name: '',
-    symbol: '',
-    startTime: '',
-    contractAddress: '',
-  });
+const [nftDetails, setNftDetails] = useState({
+  name: '',
+  symbol: '',
+  startTime: '',
+  endTime: '',
+  contractAddress: '',
+  description: ''
+});
+
 
   const proxy = new Relayer();
   const chainId = useChainId();
@@ -40,10 +46,12 @@ const MintBotDashboard: React.FC = () => {
         name: result.name,
         symbol: result.symbol,
         startTime: result.startTime,
+        endTime: result.endTime,
         contractAddress: address,
+        description: result.description || '' ,
       });
     } else {
-      setErrorMessage("⚠️ Failed to fetch NFT metadata.");
+      setErrorMessage(`⚠️ Failed to fetch NFT metadata.\n${result.error}`);
       setContractVerified(false);
     }
   };
@@ -113,7 +121,7 @@ const MintBotDashboard: React.FC = () => {
           setShowSuccess(false);
           setContractAddress('');
           setContractVerified(false);
-          setNftDetails({ name: '', symbol: '', startTime: '', contractAddress: '' });
+          setNftDetails({ name: '', symbol: '', startTime: '', endTime: '', contractAddress: '', description: '' });
           setPrivateKey('');
           setSpeedValue(0);
         }, 3000);
@@ -194,33 +202,11 @@ const MintBotDashboard: React.FC = () => {
 
           {contractVerified && (
             <>
-              <div className="gap-4 mb-4 bg-white/10 rounded-xl p-5 mt-4 shadow-md space-y-4">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h2 className="text-xl font-bold">{nftDetails.name}</h2>
-                    <p className="text-sm text-gray-400">{nftDetails.symbol}</p>
-                  </div>
-                  <span className="text-2xl">🎨</span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-white/10 p-3 rounded text-center">
-                    <p className="text-sm text-white/60">Floor Price</p>
-                    <p className="font-semibold"></p>
-                  </div>
-                  <div className="bg-white/10 p-3 rounded text-center">
-                    <p className="text-sm text-white/60">Total Supply</p>
-                    <p className="font-semibold"></p>
-                  </div>
-                </div>
-
-                <div className="border-t text-white/50 pt-3">
-                  <p className="text-sm text-white/60 mb-1">Contract</p>
-                  <a href={`https://etherscan.io/address/${nftDetails.contractAddress}`} target="_blank" rel="noopener noreferrer"
-                    className="text-blue-400 hover:underline text-sm break-all">
-                    {nftDetails.contractAddress.slice(0, 6)}...{nftDetails.contractAddress.slice(-4)}
-                  </a>
-                </div>
+                  {/* Show Enhanced NFT Card */}
+                  <div className="mb-6">
+                    <EnhancedNFTCard nft = {nftDetails}
+                    />
+                  
 
                 <p className="text-xs text-white/80 pt-2">NFT details loaded from on-chain data.</p>
               </div>
