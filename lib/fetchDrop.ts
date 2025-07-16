@@ -9,7 +9,7 @@ const namsym = [
 ];
 
 const RPC_URLS: Record<number, { rpc: string; chainName: string }> = {
-  1: { rpc: "https://rpc.ankr.com/eth", chainName: "ethereum" },
+  1: { rpc: "https://eth.drpc.org", chainName: "ethereum" },
   10: { rpc: "https://mainnet.optimism.io", chainName: "optimism" },
   137: { rpc: "https://polygon-rpc.com", chainName: "polygon" },
   42161: { rpc: "https://arb1.arbitrum.io/rpc", chainName: "arbitrum" },
