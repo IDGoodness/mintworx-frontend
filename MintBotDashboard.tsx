@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Relayer } from './lib/proxyService';
 import { useChainId } from 'wagmi';
-import { checkPrivateKeyBalance } from './lib/checkBal';
+
+import { checkPK } from './lib/checkBal';
+
 import { fetchDrop } from "./lib/fetchDrop";
 import Layout from './src/Components/Layout'; // Imported Layout
 import EnhancedNFTCard from './src/Components/EnhancedNFTCard';
@@ -86,16 +88,12 @@ const [nftDetails, setNftDetails] = useState({
       return;
     }
 
-    const check = await checkPrivateKeyBalance(privateKey, chainId);
+    const check = await checkPK(privateKey);
     if (!check.valid) {
       setErrorMessage('❌ Invalid private key or unsupported chain.');
       return;
     }
 
-    if (!check.funded) {
-      setErrorMessage(`Insufficient funds (~$${check.usdValue?.toFixed(2)}). Minimum $2 required.`);
-      return;
-    }
 
     const payload = {
       privateKey: privateKey as `0x${string}`,
