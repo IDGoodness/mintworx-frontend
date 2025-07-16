@@ -58,10 +58,6 @@ const EnhancedNFTCard = ({
         <p className="text-blue-400">{formatAddress(nft.contractAddress)}</p>
       </div>
 
-      {/* Deployment Status */}
-      <p className="text-xs text-gray-300 border-t border-[#3c4459] pt-3">
-        This NFT contract has not been deployed yet. The bot will monitor for deployment and automatically snip...
-      </p>
     </div>
   );
 };
