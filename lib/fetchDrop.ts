@@ -17,7 +17,7 @@ const RPC_URLS: Record<number, { rpc: string; chainName: string }> = {
   43114: { rpc: "https://rpc.zerion.io/v1/avalanche", chainName: "avalanche" },
   2020: { rpc: "https://ronin.drpc.org", chainName: "ronin" },
   33139: { rpc: "https://apechain.drpc.org", chainName: "apechain" },
-  2741: { rpc: "https://abstract.drpc.org/", chainName: "abstract" },
+  2741: { rpc: "https://api.mainnet.abs.xyz", chainName: "abstract" },
   1868: { rpc: "https://soneium.drpc.org/", chainName: "soneium" },
   80094: { rpc: "https://berachain.drpc.org/", chainName: "berachain" },
 };
