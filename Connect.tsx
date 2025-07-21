@@ -2,6 +2,15 @@ import { useEffect, useState } from 'react';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { motion } from 'framer-motion';
 import Layout from './src/Components/Layout'; //Import Layout
+import {authWithWallet} from './lib/authWallet'
+import ErrorModal from './src/Components/ErrorPopup';
+import LoadingModal from './src/Components/LoadingPopup';
+import { useAccount, useSignMessage } from 'wagmi';
+import { useAuthStatus } from './lib/useAut';
+import { useNavigate } from 'react-router-dom';
+
+
+
 
 // Import images from src/assets
 import nft1 from './src/assets/nft1.png';
@@ -13,6 +22,46 @@ import nft5 from './src/assets/nft5.png';
 const nftImages = [nft1, nft2, nft3, nft4, nft5];
 
 export default function ConnectSite() {
+
+  const {address,isConnected} = useAccount();
+  const { signMessageAsync} = useSignMessage();
+  const  { refreshAuth } = useAuthStatus();
+  const navigate = useNavigate();
+
+  const [showModal, setShowModal] = useState(false);
+  const [authError, setAuthError] = useState('');
+  const [isLoading, setLoading] = useState(false);
+
+
+  useEffect(() => {
+
+    if (isConnected && address) {
+
+
+      const Auth = async () => {
+      setShowModal(false);  
+      setLoading(true);
+      const { authError } = await authWithWallet({ address, signMessageAsync});
+      setLoading(false);
+      if (authError) {
+      setAuthError(authError);
+      setShowModal(true);
+    } else {
+      setLoading(true);
+      refreshAuth();
+      setLoading(false);
+      
+    }
+    };
+    Auth();
+    };
+
+
+  },
+  [isConnected,address,signMessageAsync,refreshAuth,navigate]);
+
+
+
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
@@ -22,9 +71,20 @@ export default function ConnectSite() {
     return () => clearInterval(interval);
   }, []);
 
+
   return (
     <Layout> {/* Wrap entire page in Layout */}
+      
+
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-[#0f172a] to-[#1e2153] text-white px-6">
+      {showModal && (
+        <ErrorModal
+        message={authError}
+        onClose={() => setShowModal(false)}
+        />
+      )}
+      {isLoading && <LoadingModal show={true} />}
+
         <div className="flex flex-col md:flex-row items-center justify-center gap-12 max-w-7xl w-full">
           
           {/* Left Section */}

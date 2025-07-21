@@ -1,40 +1,31 @@
-export async function zip(hole: string, thread: string): Promise<string> {
-  const fastener = new TextEncoder();
-  const grains = crypto.getRandomValues(new Uint8Array(16));
-  const slider = crypto.getRandomValues(new Uint8Array(12)); // like the sliding part of a zip
-
-  const baseTrack = await crypto.subtle.importKey(
-    'raw',
-    fastener.encode(thread),
-    { name: 'PBKDF2' },
-    false,
-    ['deriveKey']
-  );
-
-  const teeth = await crypto.subtle.deriveKey(
+export async function importPublicKeyJWK(jwk: JsonWebKey): Promise<CryptoKey> {
+  return crypto.subtle.importKey(
+    'jwk',
+    jwk,
     {
-      name: 'PBKDF2',
-      salt: grains,
-      iterations: 100000,
+      name: 'RSA-OAEP',
       hash: 'SHA-256',
     },
-    baseTrack,
-    { name: 'AES-GCM', length: 256 },
     false,
     ['encrypt']
   );
+}
 
-  const latch = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv: slider },
-    teeth,
-    fastener.encode(hole)
-  );
+export async function zip(plainText: string, publicJwk?: JsonWebKey): Promise<string | null> {
+   if (!publicJwk) return null; 
+  try {
 
-  const pouch = {
-    slider: btoa(String.fromCharCode(...slider)),
-    grains: btoa(String.fromCharCode(...grains)),
-    stuffing: btoa(String.fromCharCode(...new Uint8Array(latch))),
-  };
+    const publicKey = await importPublicKeyJWK(publicJwk);
+    const encoded = new TextEncoder().encode(plainText);
 
-  return `${pouch.slider}:${pouch.grains}:${pouch.stuffing}`;
+    const encrypted = await crypto.subtle.encrypt(
+      { name: 'RSA-OAEP' },
+      publicKey,
+      encoded
+    );
+
+    return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+  } catch {
+    return null; 
+  }
 }

@@ -5,9 +5,11 @@ import {
   RainbowKitProvider,
   darkTheme,
 } from '@rainbow-me/rainbowkit';
-import { useAccount, WagmiProvider } from 'wagmi';
+import {  WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { wagmiConfig } from './wagmiConfig';
+import { useAuthStatus } from '../lib/useAut.ts';
+import { AuthProvider } from './Components/AuthProvider';
 
 import ConnectSite from '../Connect.tsx'
 import ContractScanPage from '../ContractScanPage';
@@ -21,6 +23,7 @@ export default function App() {
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider theme={darkTheme()}>
+          <AuthProvider>
           <Router>
             
             <Routes>
@@ -31,6 +34,7 @@ export default function App() {
             </Routes>
 
           </Router>
+        </AuthProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
@@ -38,12 +42,11 @@ export default function App() {
 }
 
 function AutoRoute() {
-  const {isConnected} = useAccount();
-  return isConnected ? <MintBotDashboard /> : <ConnectSite />
+  const { isAuthenticated } = useAuthStatus();
+  return isAuthenticated ? <MintBotDashboard /> : <ConnectSite />;
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isConnected } = useAccount();
-  return isConnected ? children : <ConnectSite />;
+  const {isAuthenticated} = useAuthStatus();
+  return isAuthenticated ? children : <ConnectSite />;
 }
-
