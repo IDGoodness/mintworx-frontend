@@ -18,8 +18,8 @@ type HaltReceipt =
   | { success: true; message: string }
   | { success: false; error: string };
 
-const bravo = 'http://localhost:3000/api/v1/mint';
-const delta = 'http://localhost:3000/api/v1/cancel';
+const bravo = 'https://many-wondrous-chamois.ngrok-free.app/api/v1/mint';
+const delta = 'https://many-wondrous-chamois.ngrok-free.app/api/v1/cancel';
 
 // 🟡 Internal only
 async function stub(box: Cargo): Promise<Receipt> {
