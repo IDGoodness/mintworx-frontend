@@ -1,5 +1,5 @@
 import React from 'react';
-import logo from '../../public/assets/logo-remove.png'
+import logo from '../assets/logo-remove.png'
 
 const imageSrc = logo;
 
