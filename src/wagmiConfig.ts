@@ -34,7 +34,7 @@ const abstr = {
  const chns = [base, mainnet, arbitrum, polygon, optimism, avalanche,minato,abstr,berachain,ronin,apeChain];
 
 export const wagmiConfig = getDefaultConfig({
-  appName: 'My App',
+  appName: 'Mintworx.io',
   projectId,
   chains: [base, mainnet, arbitrum, polygon, optimism, avalanche,minato,abstr,berachain,ronin,apeChain],
   transports: Object.fromEntries(chns.map((chain) => [chain.id, http()])),

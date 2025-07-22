@@ -9,6 +9,10 @@ import EnhancedNFTCard from './src/Components/EnhancedNFTCard';
 import  {fetchPub } from "./lib/fetchPub";
 import { useAuthStatus } from './lib/useAut';
 import ConfirmationModal from './src/Components/Confirmation';
+//import ErrorModal from './src/Components/ErrorPopup';
+import LoadingModal from './src/Components/LoadingPopup';
+
+
 
 
 const MintBotDashboard: React.FC = () => {
@@ -275,14 +279,9 @@ const [showConfirmModal, setShowConfirmModal] = useState(false);
           )}
         </div>
 
-        {loading && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-              <div className="animate-spin h-10 w-10 border-4 border-blue-400 border-t-transparent rounded-full mx-auto mb-4" />
-              <p className="text-black">Loading...</p>
-            </div>
-          </div>
-        )}
+        {loading && 
+          < LoadingModal show={true} />
+        }
 
         {showSuccess && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -326,7 +325,7 @@ const [showConfirmModal, setShowConfirmModal] = useState(false);
         )}
         {showConfirmModal && (
           <ConfirmationModal
-            message={ `Activating mint costs ${chainId === 1 ? "$5" : "$2"} are you sure you want to continue`}
+            message={ `Activating mint bot \nAre you sure you want to continue`}
             onCancel={() => setShowConfirmModal(false)}
             onProceed={() => {
               setShowConfirmModal(false);
