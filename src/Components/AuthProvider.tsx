@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useAccount, useDisconnect } from 'wagmi';
-import { AuthContext } from '../../lib/useAut'; // import from new file
+import { AuthContext } from '../../lib/useAut'; 
 
 function isTokenExpired(token: string): boolean {
   try {
@@ -24,6 +24,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const mismatch = storedAddress && address && storedAddress !== address;
 
     if (!token || expired || mismatch) {
+
       localStorage.clear(); 
       disconnect();
       setIsAuthenticated(false);
@@ -32,13 +33,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [address, disconnect]);
 
+useEffect(() => {
+  if (!isConnected) {
+    setIsAuthenticated(false);
+  }
+}, [isConnected]);
+
+
   useEffect(() => {
-    if (isConnected) {
+  const syncAuth = (event: StorageEvent) => {
+    if (event.key === 'auth_token' || event.key === 'auth_wal') {
       checkAuth();
-    } else {
-      setIsAuthenticated(false);
     }
-  }, [isConnected, checkAuth]);
+  };
+
+  window.addEventListener('storage', syncAuth);
+  return () => window.removeEventListener('storage', syncAuth);
+}, [checkAuth]);
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, refreshAuth: checkAuth }}>

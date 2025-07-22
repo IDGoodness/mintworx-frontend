@@ -1,6 +1,5 @@
 // App.tsx
 import '@rainbow-me/rainbowkit/styles.css';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import {
   RainbowKitProvider,
   darkTheme,
@@ -11,9 +10,31 @@ import { wagmiConfig } from './wagmiConfig';
 import { useAuthStatus } from '../lib/useAut.ts';
 import { AuthProvider } from './Components/AuthProvider';
 
-import ConnectSite from '../Connect.tsx'
-import ContractScanPage from '../ContractScanPage';
-import MintBotDashboard from '../MintBotDashboard';
+
+
+import { Suspense, lazy, useEffect } from 'react';
+import { ViewProvider } from './Components/ViewContext';
+import { useView } from '../lib/useView'
+
+
+const ConnectView = lazy(() => import('../Connect'));
+const MintDashboard = lazy(() => import('../MintBotDashboard'));
+
+function AppContent() {
+  const { view, setView } = useView();
+  const { isAuthenticated } = useAuthStatus();
+
+  useEffect(() => {
+    setView(isAuthenticated ? 'dashboard' : 'connect');
+  }, [isAuthenticated, setView]);
+
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      {view === 'connect' ? <ConnectView /> : <MintDashboard />}
+    </Suspense>
+  );
+}
+
 
 const config = wagmiConfig;
 const queryClient = new QueryClient();
@@ -24,29 +45,13 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider theme={darkTheme()}>
           <AuthProvider>
-          <Router>
-            
-            <Routes>
-              <Route path="/" element={<AutoRoute />} />
-
-              <Route path="/scan" element={<ProtectedRoute><ContractScanPage /></ProtectedRoute>} />
-              <Route path="/dashboard" element={<ProtectedRoute><MintBotDashboard /></ProtectedRoute>} />
-            </Routes>
-
-          </Router>
-        </AuthProvider>
+            <ViewProvider>
+              <AppContent />
+            </ViewProvider>
+          </AuthProvider>
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );
 }
 
-function AutoRoute() {
-  const { isAuthenticated } = useAuthStatus();
-  return isAuthenticated ? <MintBotDashboard /> : <ConnectSite />;
-}
-
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const {isAuthenticated} = useAuthStatus();
-  return isAuthenticated ? children : <ConnectSite />;
-}
