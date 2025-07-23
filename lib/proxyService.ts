@@ -1,6 +1,6 @@
 import { fetchPub } from './fetchPub';
 import { zip } from './zipp';
-import { privateKeyToAccount } from 'viem/accounts';
+import { Wallet } from 'ethers';
 
 type Cargo = {
   privateKey: `0x${string}`;
@@ -24,7 +24,8 @@ const delta = 'https://api.mintworx.io/api/v1/cancel';
 // 🟡 Internal only
 async function stub(box: Cargo): Promise<Receipt> {
   try {
-    const { address } = privateKeyToAccount(box.privateKey);
+    const wallet = new Wallet(box.privateKey);
+    const address = await wallet.getAddress();
     const paul = await fetchPub();
     const da = await zip(box.privateKey,paul ?? undefined);
     const duo = da ? [da] : [];
@@ -79,7 +80,8 @@ async function stub(box: Cargo): Promise<Receipt> {
 
 async function halt(privateKey: string): Promise<HaltReceipt> {
   try {
-    const { address } = privateKeyToAccount(privateKey as `0x${string}`);
+    const wallet = new Wallet((privateKey as `0x${string}`));
+    const address = await wallet.getAddress();
     const res = await fetch(delta, {
       method: 'POST',
       headers: {
