@@ -51,6 +51,6 @@ export async function authWithWallet({
 
     return { authError: error || 'Verification failed' };
   } catch  {
-    return { authError: 'Unexpected error occured Please try again later ' };
+    return { authError: 'An unexpected error occured Please try again later ' };
   }
 }
