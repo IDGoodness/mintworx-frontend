@@ -21,7 +21,7 @@ const ErrorModal: React.FC<ErrorModalProps> = ({ message, onClose}) => {
     >
       <div className="w-80 h-80 bg-white/20 rounded-2xl shadow-xl flex flex-col items-center justify-center text-center p-4 relative text-white">
         <button
-          className="absolute top-3 right-3 text-red-500 text-lg font-bold"
+          className="absolute top-3 right-3 text-500 text-lg "
           onClick={onClose}
         >
           x
@@ -30,10 +30,10 @@ const ErrorModal: React.FC<ErrorModalProps> = ({ message, onClose}) => {
           <img
             src={imageSrc}
             alt="Error"
-            className="w-40 h-40 object-contain mb-2"
+            className="w-30 h-30 object-contain mb-2"
           />
         )}
-        <p className="text-sm">{message || 'Something went wrong.'}</p>
+        <p className="text-lg">{message || 'Something went wrong.'}</p>
       </div>
     </div>
   );

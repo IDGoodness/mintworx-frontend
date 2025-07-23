@@ -28,11 +28,18 @@ function AppContent() {
     setView(isAuthenticated ? 'dashboard' : 'connect');
   }, [isAuthenticated, setView]);
 
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      {view === 'connect' ? <ConnectView /> : <MintDashboard />}
-    </Suspense>
-  );
+return (
+  <Suspense
+    fallback={
+      <div className="fixed inset-0 bg-[#0a0a3c] flex items-center justify-center z-50">
+        <h1 className="text-white text-4xl font-bold tracking-wide">MintxWorx</h1>
+      </div>
+    }
+  >
+    {view === 'connect' ? <ConnectView /> : <MintDashboard />}
+  </Suspense>
+);
+
 }
 
 
