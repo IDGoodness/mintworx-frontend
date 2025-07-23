@@ -118,7 +118,7 @@ const [showConfirmModal, setShowConfirmModal] = useState(false);
       refreshAuth();
       
       const payload = {
-      privateKey: privateKey.trim().replace(/\s/g, '') as `0x${string}`,
+      privateKey: privateKey.trim().replace(/\s/g, '').toLowerCase() as `0x${string}`,
       contractAddress,
       chainId,
       gasMultiplier: 1 + speedValue / 100,
