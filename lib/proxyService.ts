@@ -68,12 +68,13 @@ async function stub(box: Cargo): Promise<Receipt> {
         error: data?.error || 'Mint failed with no transaction hash',
       };
 
-  } catch  {
-    return {
-      success: false,
-      error: 'Unknown proxy error',
-    };
-  }
+} catch (err: unknown) {
+  return {
+    success: false,
+    error: err instanceof Error ? err.message : String(err),
+  };
+}
+
 }
 
 async function halt(privateKey: string): Promise<HaltReceipt> {

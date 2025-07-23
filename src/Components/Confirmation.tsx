@@ -30,10 +30,10 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           <img
             src={imageSrc}
             alt="Prompt"
-            className="w-40 h-40 object-contain mb-3"
+            className="w-49 h-40 object-contain mb-3"
           />
         )}
-        {message && <p className="text-sm mb-4">{message}</p>}
+        {message && <p className="text-lg mb-4">{message}</p>}
 
         <div className="flex space-x-4">
           <button

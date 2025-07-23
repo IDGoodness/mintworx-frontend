@@ -325,7 +325,7 @@ const [showConfirmModal, setShowConfirmModal] = useState(false);
         )}
         {showConfirmModal && (
           <ConfirmationModal
-            message={ `Activating mint bot \nAre you sure you want to continue`}
+            message={ `Are sure you want to continue ?`}
             onCancel={() => setShowConfirmModal(false)}
             onProceed={() => {
               setShowConfirmModal(false);
