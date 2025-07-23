@@ -28,6 +28,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.clear(); 
       disconnect();
       setIsAuthenticated(false);
+        setTimeout(() => {
+            window.location.reload();
+        }, 200);
+        
     } else {
       setIsAuthenticated(true);
     }
