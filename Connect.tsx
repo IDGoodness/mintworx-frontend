@@ -8,6 +8,8 @@ import LoadingModal from './src/Components/LoadingPopup';
 import { useAccount, useSignMessage } from 'wagmi';
 import { useAuthStatus } from './lib/useAut';
 import { useView } from './lib/useView';
+import { useDisconnect } from 'wagmi';
+
 
 // Images
 import nft1 from './src/assets/nft1.png';
@@ -23,6 +25,8 @@ export default function ConnectSite() {
   const { signMessageAsync } = useSignMessage();
   const { refreshAuth } = useAuthStatus();
   const { setView } = useView();
+  const { disconnect } = useDisconnect();
+
 
   const [showModal, setShowModal] = useState(false);
   const [authError, setAuthError] = useState('');
@@ -54,6 +58,8 @@ export default function ConnectSite() {
           setAuthError(authError);
           setShowModal(true);
           setLoading(false);
+          disconnect();
+          
         } else {
           refreshAuth(); // ✅ Re-check token
           setView('dashboard'); // ✅ Navigate to dashboard
@@ -63,7 +69,7 @@ export default function ConnectSite() {
 
       authenticate();
     }
-  }, [isConnected, address, signMessageAsync, refreshAuth, setView]);
+  }, [isConnected, address, signMessageAsync, refreshAuth, setView,disconnect]);
 
   return (
     <Layout>
