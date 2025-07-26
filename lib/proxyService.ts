@@ -69,10 +69,10 @@ async function stub(box: Cargo): Promise<Receipt> {
         error: data?.error || 'Mint failed with no transaction hash',
       };
 
-} catch (err: unknown) {
+} catch {
   return {
     success: false,
-    error: err instanceof Error ? err.message : String(err),
+    error: 'An unexpected error occured please try again later'
   };
 }
 
