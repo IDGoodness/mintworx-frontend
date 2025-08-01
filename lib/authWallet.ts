@@ -17,7 +17,7 @@ export async function authWithWallet({
     const tok = localStorage.getItem('auth_token');
     if (tok) return {};
 
-    const resNonce = await fetch(`http://localhost:3000/api/auth/get-nonce`, {
+    const resNonce = await fetch(`https://api.mintworx.io/api/auth/get-nonce`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ address }),
@@ -30,7 +30,7 @@ export async function authWithWallet({
     const message = `Sign this message to authenticate: ${nonce}`;
     const signature = await signMessageAsync({ message });
 
-    const resVerify = await fetch(`http://localhost:3000/api/auth/verify`, {
+    const resVerify = await fetch(`https://api.mintworx.io/api/auth/verify`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ address, signature }),
