@@ -1,17 +1,33 @@
 import React, { useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { Relayer } from './lib/proxyService';
 import { useChainId } from 'wagmi';
+
+import { Relayer } from './lib/proxyService';
 import { checkPK } from './lib/checkBal';
 import { fetchDrop } from "./lib/fetchDrop";
+import  {fetchPub } from "./lib/fetchPub";
+
+
 import Layout from './src/Components/Layout'; // Imported Layout
 import EnhancedNFTCard from './src/Components/EnhancedNFTCard';
-import  {fetchPub } from "./lib/fetchPub";
 import { useAuthStatus } from './lib/useAut';
 import ConfirmationModal from './src/Components/Confirmation';
 //import ErrorModal from './src/Components/ErrorPopup';
 import LoadingModal from './src/Components/LoadingPopup';
+import GroupedSnipingCards  from './src/Components/Snipers';
 
+import { Stat } from "./lib/updater";
+import MintBotControls from "./src/Components/MintBotControls";
+
+
+
+
+
+
+type SniperEntry = {
+  address: string;
+  status: "pending" | "minted" | "error";
+};
 
 
 
@@ -32,9 +48,22 @@ const [nftDetails, setNftDetails] = useState({
   startTime: '',
   endTime: '',
   contractAddress: '',
-  description: ''
+  description: '',
 });
-const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [mintAmount, setMintAmount] = useState(1);
+  const [maxAmount, setMaxAmount] = useState<number>(1); // default to 1
+  const [sniper, setSniper] = useState<SniperEntry[]>([]);
+
+
+
+  const fetchSnipers = async (address: string) => {
+      const result = await Stat(address);
+      if (result.success){
+        setSniper(result.data)
+      }
+    };
+    
 
 
 
@@ -43,7 +72,8 @@ const [showConfirmModal, setShowConfirmModal] = useState(false);
   const proxy = new Relayer();
   const chainId = useChainId();
 
-  const getSpeedLabel = () => {
+
+    const getSpeedLabel = () => {
     if (speedValue < 33) return "normal";
     if (speedValue < 66) return "mid";
     return "high";
@@ -60,6 +90,9 @@ const [showConfirmModal, setShowConfirmModal] = useState(false);
         contractAddress: address,
         description: result.description || '' ,
       });
+      setMaxAmount(result.maxM);
+      setMintAmount(1);
+      await fetchSnipers(address);
       return true;
     } else {
       setErrorMessage(`⚠️ Failed to fetch NFT metadata.\n${result.error}`);
@@ -112,6 +145,13 @@ const [showConfirmModal, setShowConfirmModal] = useState(false);
     setShowSuccess(false);
     setIsSniping(true);
 
+const timeoutId = setTimeout(() => {
+  ( async () => {
+    fetchSnipers(contractAddress);
+    setLoading(false);
+})()}, 3000);
+
+
     try {
 
       await fetchPub();
@@ -122,9 +162,12 @@ const [showConfirmModal, setShowConfirmModal] = useState(false);
       contractAddress,
       chainId,
       gasMultiplier: 1 + speedValue / 100,
+      amount: mintAmount,
     };
 
+
       const result = await proxy.box(payload);
+      clearTimeout(timeoutId);
       setLoading(false);
       setIsSniping(false);
       
@@ -139,11 +182,13 @@ const [showConfirmModal, setShowConfirmModal] = useState(false);
           setNftDetails({ name: '', symbol: '', startTime: '', endTime: '', contractAddress: '', description: '' });
           setPrivateKey('');
           setSpeedValue(0);
+          setMintAmount(1);
         }, 3000);
       } else {
         setErrorMessage(`❌ Mint failed:\n${result.error}`);
       }
     } catch (err) {
+      clearTimeout(timeoutId);
       setLoading(false);
       setIsSniping(false);
       console.error('Mint error:', err);
@@ -151,7 +196,7 @@ const [showConfirmModal, setShowConfirmModal] = useState(false);
     }
   };
 
-  const handleCancel = async () => {
+ /* const handleCancel = async () => {
     try {
       const result = await proxy.halt(privateKey);
       if (result.success) {
@@ -164,7 +209,7 @@ const [showConfirmModal, setShowConfirmModal] = useState(false);
       setErrorMessage('⚠️ Unexpected error occurred while cancelling.');
     }
   };
-
+*/
   return (
     <Layout> {/* Wrapping entire content in Layout */}
       <div className="min-h-screen w-full overflow-hidden flex items-center justify-center bg-[#0f172a] text-white p-0 m-0 relative">
@@ -216,65 +261,80 @@ const [showConfirmModal, setShowConfirmModal] = useState(false);
           )}
 
           {contractVerified && (
+            
             <>
-                  {/* Show Enhanced NFT Card */}
-                  <div className="mb-6">
-                    <EnhancedNFTCard nft = {nftDetails}
-                    />
-                  
-
-                <p className="text-xs text-white/80 pt-2">NFT details loaded from on-chain data.</p>
+          
+            {/* Show Enhanced NFT Card */}
+            <div className="flex flex-wrap md:flex-nowrap gap-4 mb-6">
+              <div className="w-full md:w-1/2">
+                <EnhancedNFTCard nft={nftDetails} />
               </div>
 
+              <div className="w-full md:w-1/2">
+                <GroupedSnipingCards 
+                snipers={sniper}
+                onData={()=> fetchSnipers(contractAddress)} />
+              </div>
+            </div>
 
-              <div className="border border-gray-500 p-4 mb-6 rounded">
-                <div className="flex justify-between mb-2 text-sm text-gray-400">
-                  <span className={getSpeedLabel() === "normal" ? "text-white font-semibold" : ""}>normal</span>
-                  <span className={getSpeedLabel() === "mid" ? "text-white font-semibold" : ""}>mid</span>
-                  <span className={getSpeedLabel() === "high" ? "text-white font-semibold" : ""}>high</span>
-                </div>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  value={speedValue}
-                  onChange={(e) => setSpeedValue(Number(e.target.value))}
-                  className="w-full accent-white"
-                />
+            <div className="bg-[#0f172a] border border-white/10 p-4 rounded-xl shadow-md mb-6">
+              <p className="text-xs text-gray-300 uppercase tracking-widest mb-3">Gas Setting</p>
+              
+              <div className="flex justify-between text-sm text-gray-500 mb-3">
+                {["normal", "mid", "high"].map((label) => (
+                  <span
+                    key={label}
+                    className={`transition ${
+                      getSpeedLabel() === label ? "text-xs text-gray-300 uppercase tracking-widest font-semibold" : ""
+                    }`}
+                  >
+                    {label}
+                  </span>
+                ))}
               </div>
 
               <input
-                type="text"
-                value={privateKey}
-                onChange={(e) => setPrivateKey(e.target.value)}
-                placeholder="Enter private key"
-                className="w-full px-4 py-2 mb-4 rounded bg-white/10 border border-white/30 text-white placeholder-gray-400"
+                type="range"
+                min={0}
+                max={100}
+                value={speedValue}
+                onChange={(e) => setSpeedValue(Number(e.target.value))}
+                className="w-full h-2 rounded-full bg-gray-700 accent-white focus:outline-none appearance-none
+                          [&::-webkit-slider-thumb]:appearance-none
+                          [&::-webkit-slider-thumb]:h-4
+                          [&::-webkit-slider-thumb]:w-4
+                          [&::-webkit-slider-thumb]:rounded-full
+                          [&::-webkit-slider-thumb]:bg-white
+                          [&::-webkit-slider-thumb]:shadow-md
+                          [&::-moz-range-thumb]:h-4
+                          [&::-moz-range-thumb]:w-4
+                          [&::-moz-range-thumb]:rounded-full
+                          [&::-moz-range-thumb]:bg-white"
+              />
+              <div className="mt-3 text-center">
+                <div className="inline-block px-3 py-2 bg-white/10 rounded text-xs text-gray-400 uppercase tracking-widest">
+                  {(1 + speedValue / 100).toFixed(2)}x
+                </div>
+              </div>
+
+
+            </div>
+
+
+
+
+              <MintBotControls
+                              
+                privateKey={privateKey}
+                setPrivateKey={setPrivateKey}
+                mintAmount={mintAmount}
+                setMintAmount={setMintAmount}
+                loading={isSniping}
+                max={maxAmount}
+                onMint={() => setShowConfirmModal(true)}
+
               />
 
-              <div className="flex justify-between">
-                <button
-                  onClick={() => setShowConfirmModal(true)}
-                  className="border border-gray-400 text-white px-4 py-2 rounded hover:bg-white hover:text-black transition disabled:opacity-50 flex items-center gap-2 justify-center"
-                  disabled={isSniping || loading}
-                >
-                  {isSniping ? (
-                    <>
-                      <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
-                      Sniping...
-                    </>
-                  ) : (
-                    'Activate Bot'
-                  )}
-              </button>
-
-
-                <button
-                  onClick={handleCancel}
-                  className="border border-gray-400 text-white px-4 py-2 rounded hover:bg-white hover:text-black transition"
-                >
-                  Deactivate Bot
-                </button>
-              </div>
             </>
           )}
         </div>

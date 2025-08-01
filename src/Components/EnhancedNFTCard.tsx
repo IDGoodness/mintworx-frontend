@@ -1,5 +1,3 @@
-//import React from 'react';
-
 const EnhancedNFTCard = ({
   nft,
 }: {
@@ -8,7 +6,7 @@ const EnhancedNFTCard = ({
     symbol: string;
     startTime: string;
     endTime: string;
-    description: string; 
+    description: string;
     contractAddress: string;
   };
 }) => {
@@ -22,42 +20,41 @@ const EnhancedNFTCard = ({
   const formattedStartTime = nft.startTime || 'N/A';
 
   return (
-    <div className="bg-[#2c3445] text-white rounded-xl shadow-md p-5 w-full max-w-md space-y-4 border border-[#3c4459]">
-      {/* Title + Emoji */}
-      <div className="flex justify-between items-center">
+    <div className="bg-[#0f172a] border border-white/10 p-4 rounded-xl shadow-md mb-6 p-6 w-full max-w-md border border-[#303646] hover:shadow-2xl transition-all duration-200">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-2">
         <div>
-          <h2 className="text-xl font-bold">{collectionName}</h2>
-          <p className="text-sm text-gray-400">{symbol}</p>
+          <h2 className="text-xl font-semibold tracking-wide">{collectionName}</h2>
+          <p className="text-sm text-gray-400 mt-0.5">{symbol}</p>
         </div>
-        <div className="text-2xl">🎨</div>
+        <div className="text-2xl opacity-80">🖼️</div>
       </div>
 
-      {/* Start Time + End Time */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="bg-[#3b4358] text-center p-3 rounded-lg">
-          <p className="text-sm text-gray-300">Start Time</p>
-          <p className="text-sm text-white">{formattedStartTime}</p>
+      {/* Mint Times */}
+      <div className="grid grid-cols-2 gap-3 my-3">
+        <div className="bg-[#262b3a] rounded-lg px-3 py-2 text-center">
+          <p className="text-xs text-gray-400 mb-1">Start</p>
+          <p className="whitespace-pre-line text-xs text-gray-100">{formattedStartTime}</p>
         </div>
-        <div className="bg-[#3b4358] text-center p-3 rounded-lg">
-          <p className="text-sm text-gray-300">End Time</p>
-          <p className="text-sm text-white">{nft.endTime || 'N/A'}</p>
+        <div className="bg-[#262b3a] rounded-lg px-3 py-2 text-center">
+          <p className="text-xs text-gray-400 mb-1">End</p>
+           <p className="whitespace-pre-line text-xs text-gray-100">{nft.endTime || 'N/A'}</p>
         </div>
       </div>
 
       {/* Description */}
       {nft.description && (
-        <div className="border-t border-[#3c4459] pt-3">
-          <p className="text-sm text-gray-300 mb-1">Description</p>
-          <p className="text-sm text-white">{nft.description}</p>
+        <div className="mt-4">
+          <p className="text-xs text-gray-400 mb-1">Description</p>
+          <p className="text-sm text-gray-100">{nft.description}</p>
         </div>
       )}
 
       {/* Contract Address */}
-      <div className="border-t border-[#3c4459] pt-3 text-sm text-gray-400">
-        <p className="mb-1">Contract</p>
-        <p className="text-blue-400">{formatAddress(nft.contractAddress)}</p>
+      <div className="mt-4">
+        <p className="text-xs text-gray-400 mb-1">Contract Address</p>
+        <p className="text-sm text-blue-400">{formatAddress(nft.contractAddress)}</p>
       </div>
-
     </div>
   );
 };

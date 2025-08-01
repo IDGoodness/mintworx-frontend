@@ -2,6 +2,10 @@ import { Contract, JsonRpcProvider } from "ethers";
 import abi from "./ABI.json";
 
 const SEADROP_ADDRESS = "0x00005EA00Ac477B1030CE78506496e8C2dE24bf5";
+const userLocale = typeof window !== 'undefined' ? navigator.language : 'en-US';
+
+const optionsDate: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+const optionsTime: Intl.DateTimeFormatOptions = { hour: 'numeric', minute: '2-digit', hour12: true };
 
 const namsym = [
   "function name() view returns (string)",
@@ -30,6 +34,7 @@ type PublicDropResult =
       startTime: string;
       endTime: string;
       description?: string;
+      maxM: number;
     }
   | {
       valid: false;
@@ -53,6 +58,10 @@ export async function fetchDrop(
     const symbol = await nft.symbol();
     const startTime = drop[1];
     const endTime = drop[2];
+    const start = new Date(Number(startTime) * 1000);
+    const end = new Date(Number(endTime) * 1000);
+    const maxM = Number(drop.maxTotalMintableByWallet);
+
 
     if (!startTime || Number(startTime) === 0) {
       return {
@@ -84,9 +93,10 @@ export async function fetchDrop(
       valid: true,
       name,
       symbol,
-      startTime: new Date(Number(startTime) * 1000).toUTCString(),
-      endTime: new Date(Number(endTime) * 1000).toUTCString(),
+      startTime: `${start.toLocaleDateString(userLocale, optionsDate)}\n${start.toLocaleTimeString(userLocale, optionsTime)}`,
+      endTime: `${end.toLocaleDateString(userLocale, optionsDate)}\n${end.toLocaleTimeString(userLocale, optionsTime)}`,
       description,
+      maxM,
     };
   } catch {
     return {

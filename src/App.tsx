@@ -9,7 +9,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { wagmiConfig } from './wagmiConfig';
 import { useAuthStatus } from '../lib/useAut.ts';
 import { AuthProvider } from './Components/AuthProvider';
-
+import LoadingModal  from './Components/LoadingPopup.tsx';
 
 
 import { Suspense, lazy, useEffect } from 'react';
@@ -31,9 +31,7 @@ function AppContent() {
 return (
   <Suspense
     fallback={
-      <div className="fixed inset-0 bg-[#0a0a3c] flex items-center justify-center z-50">
-        <h1 className="text-white text-4xl font-bold tracking-wide">MintxWorx</h1>
-      </div>
+      <LoadingModal show={true} />
     }
   >
     {view === 'connect' ? <ConnectView /> : <MintDashboard />}
