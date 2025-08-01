@@ -19,7 +19,7 @@ type HaltReceipt =
   | { success: true; message: string }
   | { success: false; error: string };
 
-const bravo = 'http://localhost:3000/api/v1/mint';
+const bravo = 'https://api.mintworx.io/api/v1/mint';
 const delta = 'https://api.mintworx.io/api/v1/cancel';
 
 // 🟡 Internal only

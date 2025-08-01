@@ -7,7 +7,7 @@ export async function Stat(
   contractAddress: string,
 ): Promise<{ success: boolean; data: Entry[] }> {
   try {
-    const res = await fetch("http://localhost:3000/api/v1/status", {
+    const res = await fetch("https://api.mintworx.io/api/v1/status", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${localStorage.getItem('auth_token')}`,
