@@ -43,28 +43,3 @@ export async function Stat(
 }
 
 
-
-/*
-// statusService.ts
- type SniperEntry = {
-  address: string;
-  status: "pending" | "minted" | "error";
-};
-
-// This mimics the backend response
-export async function Stat(contractAddress: string,): Promise<{ success: boolean; data: SniperEntry[] }> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        success: true,
-        data: [
-          {  address: "0xUserA", status: "pending" },
-          {  address: "0xUserB", status: "minted" },
-          {  address: "0xUserC", status: "error" },
-        ],
-      });
-    }, 500); // simulate network delay
-  });
-}
-
-*/

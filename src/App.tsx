@@ -4,18 +4,18 @@ import {
   RainbowKitProvider,
   darkTheme,
 } from '@rainbow-me/rainbowkit';
-import {  WagmiProvider } from 'wagmi';
+import { WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { wagmiConfig } from './wagmiConfig';
 import { useAuthStatus } from '../lib/useAut.ts';
 import { AuthProvider } from './Components/AuthProvider';
-import LoadingModal  from './Components/LoadingPopup.tsx';
-
+import LoadingModal from './Components/LoadingPopup.tsx';
 
 import { Suspense, lazy, useEffect } from 'react';
 import { ViewProvider } from './Components/ViewContext';
-import { useView } from '../lib/useView'
+import { useView } from '../lib/useView';
 
+import { Toaster } from 'react-hot-toast'; // ✅ import this
 
 const ConnectView = lazy(() => import('../Connect'));
 const MintDashboard = lazy(() => import('../MintBotDashboard'));
@@ -28,18 +28,12 @@ function AppContent() {
     setView(isAuthenticated ? 'dashboard' : 'connect');
   }, [isAuthenticated, setView]);
 
-return (
-  <Suspense
-    fallback={
-      <LoadingModal show={true} />
-    }
-  >
-    {view === 'connect' ? <ConnectView /> : <MintDashboard />}
-  </Suspense>
-);
-
+  return (
+    <Suspense fallback={<LoadingModal show={true} />}>
+      {view === 'connect' ? <ConnectView /> : <MintDashboard />}
+    </Suspense>
+  );
 }
-
 
 const config = wagmiConfig;
 const queryClient = new QueryClient();
@@ -50,6 +44,7 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider theme={darkTheme()}>
           <AuthProvider>
+            <Toaster position="top-right" toastOptions={{ duration: 4000 }} /> {/* ✅ Toast */}
             <ViewProvider>
               <AppContent />
             </ViewProvider>
@@ -59,4 +54,3 @@ export default function App() {
     </WagmiProvider>
   );
 }
-

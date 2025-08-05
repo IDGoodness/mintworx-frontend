@@ -12,7 +12,7 @@ type Cargo = {
 };
 
 type Receipt =
-  | { success: true; txHash: string }
+  | { success: true; txHash?: string; message?: string }
   | { success: false; error: string };
 
 type HaltReceipt =
@@ -62,21 +62,28 @@ async function stub(box: Cargo): Promise<Receipt> {
 
     const data = await res.json();
 
-    if (data?.success && data.txHash && data?.txHash) {
-        return { success: true, txHash: data.txHash };
-     
+    if (data?.success && (data.txHash || data.message)) {
+      return {
+        success: true,
+        ...(data.txHash && { txHash: data.txHash }),
+        ...(data.message && { message: data.message }),
+      };
     }
+
+     
+    
      return {
         success: false,
         error: data?.error || 'Mint failed with no transaction hash',
       };
 
-} catch {
+} catch  {
   return {
     success: false,
-    error: 'An unexpected error occured please try again later'
+    error:'An unexpected error occurred, please try again later',
   };
 }
+
 
 }
 

@@ -1,35 +1,26 @@
 import React, { useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useChainId } from 'wagmi';
+import toast from 'react-hot-toast';
 
 import { Relayer } from './lib/proxyService';
 import { checkPK } from './lib/checkBal';
 import { fetchDrop } from "./lib/fetchDrop";
 import  {fetchPub } from "./lib/fetchPub";
 
-
-import Layout from './src/Components/Layout'; // Imported Layout
+import Layout from './src/Components/Layout';
 import EnhancedNFTCard from './src/Components/EnhancedNFTCard';
 import { useAuthStatus } from './lib/useAut';
 import ConfirmationModal from './src/Components/Confirmation';
-//import ErrorModal from './src/Components/ErrorPopup';
 import LoadingModal from './src/Components/LoadingPopup';
 import GroupedSnipingCards  from './src/Components/Snipers';
-
 import { Stat } from "./lib/updater";
 import MintBotControls from "./src/Components/MintBotControls";
-
-
-
-
-
 
 type SniperEntry = {
   address: string;
   status: "pending" | "minted" | "error";
 };
-
-
 
 const MintBotDashboard: React.FC = () => {
   const [speedValue, setSpeedValue] = useState(0);
@@ -38,42 +29,32 @@ const MintBotDashboard: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [contractVerified, setContractVerified] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
   const [isSniping, setIsSniping] = useState(false);
-  const [txHash, setTxHash] = useState('');
-const [nftDetails, setNftDetails] = useState({
-  name: '',
-  symbol: '',
-  startTime: '',
-  endTime: '',
-  contractAddress: '',
-  description: '',
-});
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [mintAmount, setMintAmount] = useState(1);
-  const [maxAmount, setMaxAmount] = useState<number>(1); // default to 1
+  const [maxAmount, setMaxAmount] = useState<number>(1);
   const [sniper, setSniper] = useState<SniperEntry[]>([]);
+  const [nftDetails, setNftDetails] = useState({
+    name: '',
+    symbol: '',
+    startTime: '',
+    endTime: '',
+    contractAddress: '',
+    description: '',
+  });
 
-
-
-  const fetchSnipers = async (address: string) => {
-      const result = await Stat(address);
-      if (result.success){
-        setSniper(result.data)
-      }
-    };
-    
-
-
-
-
-  const  { refreshAuth } = useAuthStatus();
+  const { refreshAuth } = useAuthStatus();
   const proxy = new Relayer();
   const chainId = useChainId();
 
+  const fetchSnipers = async (address: string) => {
+    const result = await Stat(address);
+    if (result.success) {
+      setSniper(result.data);
+    }
+  };
 
-    const getSpeedLabel = () => {
+  const getSpeedLabel = () => {
     if (speedValue < 33) return "normal";
     if (speedValue < 66) return "mid";
     return "high";
@@ -88,14 +69,14 @@ const [nftDetails, setNftDetails] = useState({
         startTime: result.startTime,
         endTime: result.endTime,
         contractAddress: address,
-        description: result.description || '' ,
+        description: result.description || '',
       });
       setMaxAmount(result.maxM);
       setMintAmount(1);
       await fetchSnipers(address);
       return true;
     } else {
-      setErrorMessage(`⚠️ Failed to fetch NFT metadata.\n${result.error}`);
+      toast.error(`⚠️ Failed to fetch NFT metadata.\n${result.error}`);
       setContractVerified(false);
       return false;
     }
@@ -103,115 +84,85 @@ const [nftDetails, setNftDetails] = useState({
 
   const verifyContractAddress = async () => {
     setVerifying(true);
-    setErrorMessage('');
     setTimeout(async () => {
-      const isValid = /^0x[a-fA-F0-9]{40}$/.test(contractAddress.trim());
-      if (!contractAddress.trim()) {
-        setErrorMessage("Please enter a contract address.");
+      const trimmed = contractAddress.trim();
+      const isValid = /^0x[a-fA-F0-9]{40}$/.test(trimmed);
+      if (!trimmed) {
+        toast.error("Please enter a contract address.");
         setContractVerified(false);
       } else if (!isValid) {
-        setErrorMessage("❌ Invalid contract address format.");
+        toast.error("❌ Invalid contract address format.");
         setContractVerified(false);
       } else {
-       const isValidMetadata = await getNFTMetadata(contractAddress.trim(), chainId);
+        const isValidMetadata = await getNFTMetadata(trimmed, chainId);
         if (isValidMetadata) {
           setContractVerified(true);
         }
-
       }
       setVerifying(false);
     }, 1000);
   };
 
   const handleMint = async () => {
-    if (!privateKey.trim()) {
-      setErrorMessage('Please enter your private key.');
-      return;
-    }
-
-    if (!contractAddress.trim()) {
-      setErrorMessage('Please enter the contract address.');
-      return;
-    }
+    if (!privateKey.trim()) return toast.error('Please enter your private key.');
+    if (!contractAddress.trim()) return toast.error('Please enter the contract address.');
 
     const check = await checkPK(privateKey);
-    if (!check.valid) {
-      setErrorMessage('❌ Invalid private key or unsupported chain.');
-      return;
-    }
-
+    if (!check.valid) return toast.error('❌ Invalid private key or unsupported chain.');
 
     setLoading(true);
-    setShowSuccess(false);
     setIsSniping(true);
-
-const timeoutId = setTimeout(() => {
-  ( async () => {
-    fetchSnipers(contractAddress);
-    setLoading(false);
-})()}, 3000);
-
+    const timeoutId = setTimeout(() => fetchSnipers(contractAddress), 3000);
 
     try {
-
       await fetchPub();
       refreshAuth();
-      
-      const payload = {
-      privateKey: privateKey.trim().replace(/\s/g, '').toLowerCase() as `0x${string}`,
-      contractAddress,
-      chainId,
-      gasMultiplier: 1 + speedValue / 100,
-      amount: mintAmount,
-    };
 
+      const payload = {
+        privateKey: privateKey.trim().replace(/\s/g, '').toLowerCase() as `0x${string}`,
+        contractAddress,
+        chainId,
+        gasMultiplier: 1 + speedValue / 100,
+        amount: mintAmount,
+      };
 
       const result = await proxy.box(payload);
       clearTimeout(timeoutId);
       setLoading(false);
       setIsSniping(false);
-      
-      if (result.success) {
-        setTxHash(result.txHash || '');
-        setShowSuccess(true);
 
-        setTimeout(() => {
-          setShowSuccess(false);
+      if (result.success) {
+        const output = result.txHash || result.message || '';
+        fetchSnipers(contractAddress);
+        if (output === 'Activated') {
+          toast.success('Bot activated!');
+        } else {
+          toast.success('🎉 Mint successful!');
           setContractAddress('');
           setContractVerified(false);
           setNftDetails({ name: '', symbol: '', startTime: '', endTime: '', contractAddress: '', description: '' });
-          setPrivateKey('');
-          setSpeedValue(0);
-          setMintAmount(1);
-        }, 3000);
+        }
+
+        // Reset state
+
+        setPrivateKey('');
+        setSpeedValue(0);
+        setMintAmount(1);
       } else {
-        setErrorMessage(`❌ Mint failed:\n${result.error}`);
+        if (result.error === 'Session Expired') refreshAuth();
+        toast.error(`❌ Mint failed:\n${result.error}`);
       }
     } catch (err) {
       clearTimeout(timeoutId);
       setLoading(false);
       setIsSniping(false);
       console.error('Mint error:', err);
-      setErrorMessage('⚠️ Unexpected error occurred during minting.');
+      toast.error('⚠️ Unexpected error occurred during minting.');
     }
   };
 
- /* const handleCancel = async () => {
-    try {
-      const result = await proxy.halt(privateKey);
-      if (result.success) {
-        setErrorMessage(`🛑 Mint cancelled:\n${result.message}`);
-      } else {
-        setErrorMessage(`❌ Cancel failed:\n${result.error}`);
-      }
-    } catch (err) {
-      console.error('Cancel error:', err);
-      setErrorMessage('⚠️ Unexpected error occurred while cancelling.');
-    }
-  };
-*/
   return (
-    <Layout> {/* Wrapping entire content in Layout */}
+    <Layout>
       <div className="min-h-screen w-full overflow-hidden flex items-center justify-center bg-[#0f172a] text-white p-0 m-0 relative">
         <div className="absolute inset-0 z-0">
           <div className="absolute top-[-100px] left-[-100px] w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse" />
@@ -243,7 +194,7 @@ const timeoutId = setTimeout(() => {
             </button>
           </div>
 
-          {!contractVerified && (
+          {!contractVerified && !verifying && (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <div className="col-span-full text-center p-6 border border-blue-500/20 rounded-lg bg-black/20">
@@ -261,70 +212,47 @@ const timeoutId = setTimeout(() => {
           )}
 
           {contractVerified && (
-            
             <>
-          
-            {/* Show Enhanced NFT Card */}
-            <div className="flex flex-wrap md:flex-nowrap gap-4 mb-6">
-              <div className="w-full md:w-1/2">
-                <EnhancedNFTCard nft={nftDetails} />
-              </div>
-
-              <div className="w-full md:w-1/2">
-                <GroupedSnipingCards 
-                snipers={sniper}
-                onData={()=> fetchSnipers(contractAddress)} />
-              </div>
-            </div>
-
-            <div className="bg-[#0f172a] border border-white/10 p-4 rounded-xl shadow-md mb-6">
-              <p className="text-xs text-gray-300 uppercase tracking-widest mb-3">Gas Setting</p>
-              
-              <div className="flex justify-between text-sm text-gray-500 mb-3">
-                {["normal", "mid", "high"].map((label) => (
-                  <span
-                    key={label}
-                    className={`transition ${
-                      getSpeedLabel() === label ? "text-xs text-gray-300 uppercase tracking-widest font-semibold" : ""
-                    }`}
-                  >
-                    {label}
-                  </span>
-                ))}
-              </div>
-
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={speedValue}
-                onChange={(e) => setSpeedValue(Number(e.target.value))}
-                className="w-full h-2 rounded-full bg-gray-700 accent-white focus:outline-none appearance-none
-                          [&::-webkit-slider-thumb]:appearance-none
-                          [&::-webkit-slider-thumb]:h-4
-                          [&::-webkit-slider-thumb]:w-4
-                          [&::-webkit-slider-thumb]:rounded-full
-                          [&::-webkit-slider-thumb]:bg-white
-                          [&::-webkit-slider-thumb]:shadow-md
-                          [&::-moz-range-thumb]:h-4
-                          [&::-moz-range-thumb]:w-4
-                          [&::-moz-range-thumb]:rounded-full
-                          [&::-moz-range-thumb]:bg-white"
-              />
-              <div className="mt-3 text-center">
-                <div className="inline-block px-3 py-2 bg-white/10 rounded text-xs text-gray-400 uppercase tracking-widest">
-                  {(1 + speedValue / 100).toFixed(2)}x
+              <div className="flex flex-wrap md:flex-nowrap gap-4 mb-6">
+                <div className="w-full md:w-1/2">
+                  <EnhancedNFTCard nft={nftDetails} />
+                </div>
+                <div className="w-full md:w-1/2">
+                  <GroupedSnipingCards snipers={sniper} onData={() => fetchSnipers(contractAddress)} />
                 </div>
               </div>
 
+              <div className="bg-[#0f172a] border border-white/10 p-4 rounded-xl shadow-md mb-6">
+                <p className="text-xs text-gray-300 uppercase tracking-widest mb-3">Gas Setting</p>
+                <div className="flex justify-between text-sm text-gray-500 mb-3">
+                  {["normal", "mid", "high"].map((label) => (
+                    <span
+                      key={label}
+                      className={`transition ${
+                        getSpeedLabel() === label ? "text-xs text-gray-300 uppercase tracking-widest font-semibold" : ""
+                      }`}
+                    >
+                      {label}
+                    </span>
+                  ))}
+                </div>
 
-            </div>
-
-
-
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={speedValue}
+                  onChange={(e) => setSpeedValue(Number(e.target.value))}
+                  className="w-full h-2 rounded-full bg-gray-700 accent-white"
+                />
+                <div className="mt-3 text-center">
+                  <div className="inline-block px-3 py-2 bg-white/10 rounded text-xs text-gray-400 uppercase tracking-widest">
+                    {(1 + speedValue / 100).toFixed(2)}x
+                  </div>
+                </div>
+              </div>
 
               <MintBotControls
-                              
                 privateKey={privateKey}
                 setPrivateKey={setPrivateKey}
                 mintAmount={mintAmount}
@@ -332,60 +260,16 @@ const timeoutId = setTimeout(() => {
                 loading={isSniping}
                 max={maxAmount}
                 onMint={() => setShowConfirmModal(true)}
-
               />
-
             </>
           )}
         </div>
 
-        {loading && 
-          < LoadingModal show={true} />
-        }
+        {loading && <LoadingModal show={true} />}
 
-        {showSuccess && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white p-6 rounded-xl shadow-lg text-center w-80">
-              <div className="flex items-center justify-center mb-4">
-                <div className="bg-green-100 rounded-full p-3">
-                  <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-              </div>
-              <h2 className="text-xl font-bold text-black mb-2">Success</h2>
-              <p className="text-sm text-gray-600">Your mint was successful!</p>
-              {txHash && (
-                <p className="text-xs text-gray-500 break-words">Tx Hash: {txHash}</p>
-              )}
-            </div> 
-          </div>
-        )}
-
-        {errorMessage && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-            <div className="bg-white p-6 rounded-xl shadow-lg text-center w-80 border-l-4 border-red-500">
-              <div className="flex items-center justify-center mb-4">
-                <div className="bg-red-100 rounded-full p-3">
-                  <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </div>
-              </div>
-              <h2 className="text-xl font-bold text-black mb-2">Error</h2>
-              <p className="text-sm text-gray-600 whitespace-pre-line">{errorMessage}</p>
-              <button
-                className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition"
-                onClick={() => setErrorMessage('')}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        )}
         {showConfirmModal && (
           <ConfirmationModal
-            message={ `Are sure you want to continue ?`}
+            message={`Are sure you want to continue ?`}
             onCancel={() => setShowConfirmModal(false)}
             onProceed={() => {
               setShowConfirmModal(false);
@@ -393,7 +277,6 @@ const timeoutId = setTimeout(() => {
             }}
           />
         )}
-
       </div>
     </Layout>
   );
