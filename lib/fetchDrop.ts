@@ -24,6 +24,7 @@ const RPC_URLS: Record<number, { rpc: string; chainName: string }> = {
   2741: { rpc: "https://api.mainnet.abs.xyz", chainName: "abstract" },
   1868: { rpc: "https://soneium.drpc.org/", chainName: "soneium" },
   80094: { rpc: "https://berachain.drpc.org/", chainName: "berachain" },
+  999: {rpc: "https://hyperliquid.drpc.org", chainName: "hyperliquid"}
 };
 
 type PublicDropResult =

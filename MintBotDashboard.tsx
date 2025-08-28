@@ -1,8 +1,9 @@
 import React, { useState } from "react";
+import { Fuel } from "lucide-react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useChainId } from 'wagmi';
+import { useChainId, useGasPrice } from 'wagmi';
 import toast from 'react-hot-toast';
-
+import { formatUnits } from "viem";
 import { Relayer } from './lib/proxyService';
 import { checkPK } from './lib/checkBal';
 import { fetchDrop } from "./lib/fetchDrop";
@@ -46,6 +47,13 @@ const MintBotDashboard: React.FC = () => {
   const { refreshAuth } = useAuthStatus();
   const proxy = new Relayer();
   const chainId = useChainId();
+  const gasPrice = useGasPrice({
+    chainId,
+    query: {
+      refetchInterval: 5000,
+      staleTime: 2000,
+    }
+  });
 
   const fetchSnipers = async (address: string) => {
     const result = await Stat(address);
@@ -55,9 +63,11 @@ const MintBotDashboard: React.FC = () => {
   };
 
   const getSpeedLabel = () => {
-    if (speedValue < 33) return "normal";
-    if (speedValue < 66) return "mid";
-    return "high";
+    if (speedValue < 25) return "competitive";
+    if (speedValue < 50) return "aggressive";
+    if (speedValue < 75) return "turbo";
+    
+    return "nuclear";
   };
 
   const getNFTMetadata = async (address: string, chainId: number) => {
@@ -122,7 +132,7 @@ const MintBotDashboard: React.FC = () => {
         privateKey: privateKey.trim().replace(/\s/g, '').toLowerCase() as `0x${string}`,
         contractAddress,
         chainId,
-        gasMultiplier: 1 + speedValue / 100,
+        gasMultiplier: 10 + (speedValue * 90 / 100),
         amount: mintAmount,
       };
 
@@ -223,9 +233,23 @@ const MintBotDashboard: React.FC = () => {
               </div>
 
               <div className="bg-[#0f172a] border border-white/10 p-4 rounded-xl shadow-md mb-6">
-                <p className="text-xs text-gray-300 uppercase tracking-widest mb-3">Gas Setting</p>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <p className="text-xs text-gray-300 uppercase tracking-widest">Gas Setting</p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      
+                      <span className="text-xs text-gray-300 uppercase tracking-widest">
+                        {gasPrice.data ? 
+                          `${Number(formatUnits(gasPrice.data, 9)).toFixed(4)} gwei` : 
+                          'Loading...'
+                        }
+                      </span>
+                      <Fuel className="w-4 h-4 text-gray-300" />
+                    </div>
+                  </div>
                 <div className="flex justify-between text-sm text-gray-500 mb-3">
-                  {["normal", "mid", "high"].map((label) => (
+                  {["competitive","aggressive", "turbo", "nuclear"].map((label) => (
                     <span
                       key={label}
                       className={`transition ${
@@ -247,7 +271,7 @@ const MintBotDashboard: React.FC = () => {
                 />
                 <div className="mt-3 text-center">
                   <div className="inline-block px-3 py-2 bg-white/10 rounded text-xs text-gray-400 uppercase tracking-widest">
-                    {(1 + speedValue / 100).toFixed(2)}x
+                    {(10 + (speedValue * 90 / 100)).toFixed(2)}x
                   </div>
                 </div>
               </div>
